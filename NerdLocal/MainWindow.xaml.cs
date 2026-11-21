@@ -7,9 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 
 namespace NerdLocal
@@ -26,6 +28,13 @@ namespace NerdLocal
         private string currentEditingFile = "";
         private bool _isLoadingEditor;
         private bool _editorHasUnsavedChanges;
+        private bool _isDarkTheme = true;
+        private bool _syncingNavigation;
+
+        private static readonly string ThemeSettingsFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NerdLocal",
+            "ui-theme.txt");
 
         private string HOST_FILE =
             @"C:\Windows\System32\drivers\etc\hosts";
@@ -39,6 +48,7 @@ namespace NerdLocal
         public MainWindow()
         {
             InitializeComponent();
+            ApplyTheme(LoadSavedThemePreference(), savePreference: false);
 
             txtHostsFile.Text = HOST_FILE;
             txtVhostFile.Text = VHOST_FILE;
@@ -336,6 +346,14 @@ namespace NerdLocal
             cmbPort.SelectedItem = portItem;
             txtDomainFormTitle.Text = "Edit Domain";
             btnAddDomain.Content = "Save Changes";
+            btnCancelEdit.Visibility = Visibility.Visible;
+            SetStatusBar("Editing domain: " + editingDomain.Domain);
+        }
+
+        private void CancelEdit_Click(object sender, RoutedEventArgs e)
+        {
+            ClearDomainEdit();
+            SetStatusBar("Edit cancelled  •  XAMPP Local Stack");
         }
 
         private void DeleteDomain_Click(object sender, RoutedEventArgs e)
@@ -423,6 +441,7 @@ namespace NerdLocal
             cmbPort.SelectedIndex = 0;
             txtDomainFormTitle.Text = "Add New Domain";
             btnAddDomain.Content = "+   Add Domain";
+            btnCancelEdit.Visibility = Visibility.Collapsed;
         }
 
         private string ReplaceHostsMapping(
@@ -817,6 +836,7 @@ namespace NerdLocal
                 txtConfigEditor.Text = File.ReadAllText(filePath);
                 currentEditingFile = filePath;
                 _editorHasUnsavedChanges = false;
+                SetStatusBar("Loaded: " + filePath);
             }
             catch (Exception ex)
             {
@@ -836,6 +856,7 @@ namespace NerdLocal
                 !string.IsNullOrWhiteSpace(currentEditingFile))
             {
                 _editorHasUnsavedChanges = true;
+                SetStatusBar("Modified (unsaved): " + currentEditingFile);
             }
         }
 
@@ -960,6 +981,340 @@ namespace NerdLocal
                 "Apache",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private async void CheckCurl_Click(object sender, RoutedEventArgs e)
+        {
+            string input = txtCurlDomain.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                txtCurlOutput.Text = "Enter a website domain or URL.";
+                return;
+            }
+
+            if (!input.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !input.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                input = "https://" + input;
+            }
+
+            Uri uri;
+
+            if (!Uri.TryCreate(input, UriKind.Absolute, out uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp &&
+                 uri.Scheme != Uri.UriSchemeHttps))
+            {
+                txtCurlOutput.Text = "Enter a valid HTTP or HTTPS website URL.";
+                return;
+            }
+
+            Button button = sender as Button;
+            if (button != null)
+                button.IsEnabled = false;
+
+            txtCurlOutput.Text = "curl.exe -IL " + uri.AbsoluteUri + "\r\n\r\n";
+
+            try
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "curl.exe",
+                    Arguments = "-IL \"" + uri.AbsoluteUri + "\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+                    Task<string> errorTask = process.StandardError.ReadToEndAsync();
+
+                    await Task.Run(() => process.WaitForExit());
+
+                    string output = await outputTask;
+                    string error = await errorTask;
+
+                    txtCurlOutput.Text += output;
+
+                    if (!string.IsNullOrWhiteSpace(error))
+                        txtCurlOutput.Text += error;
+
+                    if (process.ExitCode != 0 && string.IsNullOrWhiteSpace(error))
+                        txtCurlOutput.Text += "\r\ncurl.exe exited with code " +
+                                              process.ExitCode + ".";
+                }
+            }
+            catch (Exception ex)
+            {
+                txtCurlOutput.Text += "Could not run curl.exe:\r\n" + ex.Message;
+            }
+            finally
+            {
+                if (button != null)
+                    button.IsEnabled = true;
+            }
+        }
+
+        private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void MaximizeRestoreWindow_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+        }
+
+        private void CloseWindow_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (RootWindowBorder == null || pathMaxRestore == null || btnMaxRestore == null)
+                return;
+
+            if (WindowState == WindowState.Maximized)
+            {
+                RootWindowBorder.Padding = new Thickness(7);
+                RootWindowBorder.BorderThickness = new Thickness(0);
+                btnMaxRestore.ToolTip = "Restore Down";
+                pathMaxRestore.Data = Geometry.Parse("M 0,2 L 7,2 L 7,9 L 0,9 Z M 2,2 L 2,0 L 9,0 L 9,7 L 7,7");
+            }
+            else
+            {
+                RootWindowBorder.Padding = new Thickness(0);
+                RootWindowBorder.BorderThickness = new Thickness(1);
+                btnMaxRestore.ToolTip = "Maximize";
+                pathMaxRestore.Data = Geometry.Parse("M 0,0 L 9,0 L 9,9 L 0,9 Z");
+            }
+        }
+
+        private void ActivityNav_Click(object sender, RoutedEventArgs e)
+        {
+            if (_syncingNavigation || MainTabs == null)
+                return;
+
+            RadioButton navButton = sender as RadioButton;
+            int tabIndex;
+            if (navButton?.Tag != null &&
+                int.TryParse(navButton.Tag.ToString(), out tabIndex) &&
+                tabIndex >= 0 &&
+                tabIndex < MainTabs.Items.Count)
+            {
+                _syncingNavigation = true;
+                MainTabs.SelectedIndex = tabIndex;
+                UpdateNavigationMetadata(tabIndex);
+                _syncingNavigation = false;
+            }
+        }
+
+        private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_syncingNavigation || !ReferenceEquals(e.Source, MainTabs))
+                return;
+
+            _syncingNavigation = true;
+            int index = MainTabs.SelectedIndex;
+            if (navDomains != null) navDomains.IsChecked = index == 0;
+            if (navConfig != null) navConfig.IsChecked = index == 1;
+            if (navTools != null) navTools.IsChecked = index == 2;
+            if (navCurl != null) navCurl.IsChecked = index == 3;
+            UpdateNavigationMetadata(index);
+            _syncingNavigation = false;
+        }
+
+        private void UpdateNavigationMetadata(int tabIndex)
+        {
+            string section = "Domain Manager";
+            if (tabIndex == 1) section = "Config Files";
+            else if (tabIndex == 2) section = "Tools";
+            else if (tabIndex == 3) section = "Curl Checker";
+
+            if (txtCommandBarHint != null)
+                txtCommandBarHint.Text = "NerdLocal  •  " + section;
+        }
+
+        private void SetStatusBar(string text)
+        {
+            if (txtStatusBarInfo != null)
+                txtStatusBarInfo.Text = text;
+        }
+
+        private void ToggleTheme_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyTheme(!_isDarkTheme, savePreference: true);
+        }
+
+        private bool LoadSavedThemePreference()
+        {
+            try
+            {
+                if (File.Exists(ThemeSettingsFilePath))
+                {
+                    string saved = File.ReadAllText(ThemeSettingsFilePath).Trim();
+                    if (saved.Equals("light", StringComparison.OrdinalIgnoreCase))
+                        return false;
+                }
+            }
+            catch
+            {
+                // Fall back to default Dark Modern theme if preference file cannot be read.
+            }
+
+            return true;
+        }
+
+        private void SaveThemePreference(bool isDark)
+        {
+            try
+            {
+                string directory = Path.GetDirectoryName(ThemeSettingsFilePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllText(ThemeSettingsFilePath, isDark ? "dark" : "light");
+            }
+            catch
+            {
+                // Ignore non-critical settings persistence errors.
+            }
+        }
+
+        private static void SetBrushResource(ResourceDictionary resources, string key, string hexColor)
+        {
+            Color color = (Color)ColorConverter.ConvertFromString(hexColor);
+            SolidColorBrush brush = new SolidColorBrush(color);
+            brush.Freeze();
+            resources[key] = brush;
+        }
+
+        private void ApplyTheme(bool isDark, bool savePreference)
+        {
+            _isDarkTheme = isDark;
+            ResourceDictionary resources = Application.Current.Resources;
+
+            if (isDark)
+            {
+                // VS Code Dark Modern
+                SetBrushResource(resources, "TitleBarBg", "#181818");
+                SetBrushResource(resources, "ActivityBarBg", "#181818");
+                SetBrushResource(resources, "SidebarBg", "#181818");
+                SetBrushResource(resources, "EditorBg", "#1F1F1F");
+                SetBrushResource(resources, "SurfaceBg", "#252526");
+                SetBrushResource(resources, "CommandCenterBg", "#242424");
+                SetBrushResource(resources, "CommandCenterBorder", "#3C3C3C");
+                SetBrushResource(resources, "InputBg", "#313131");
+                SetBrushResource(resources, "InputBorder", "#3C3C3C");
+                SetBrushResource(resources, "BorderSubtle", "#2B2B2B");
+                SetBrushResource(resources, "TabInactiveBg", "#181818");
+                SetBrushResource(resources, "TabActiveBg", "#1F1F1F");
+                SetBrushResource(resources, "HoverBg", "#2A2D2E");
+                SetBrushResource(resources, "SelectionBg", "#04395E");
+                SetBrushResource(resources, "ButtonSecondaryBg", "#313131");
+                SetBrushResource(resources, "ButtonSecondaryHoverBg", "#3C3C3C");
+                SetBrushResource(resources, "ButtonSecondaryBorder", "#3C3C3C");
+                SetBrushResource(resources, "AccentBrush", "#0078D4");
+                SetBrushResource(resources, "AccentHoverBrush", "#026EC1");
+                SetBrushResource(resources, "AccentSubtleBg", "#12293D");
+                SetBrushResource(resources, "AccentSubtleBorder", "#1E4B73");
+                SetBrushResource(resources, "DangerBrush", "#F14C4C");
+                SetBrushResource(resources, "DangerSubtleBg", "#3A1D1E");
+                SetBrushResource(resources, "SuccessBrush", "#3FB950");
+                SetBrushResource(resources, "SuccessSubtleBg", "#162C1E");
+                SetBrushResource(resources, "SuccessSubtleBorder", "#244B31");
+                SetBrushResource(resources, "WarningBg", "#2B2315");
+                SetBrushResource(resources, "WarningBorder", "#594522");
+                SetBrushResource(resources, "WarningTitleFg", "#E3B341");
+                SetBrushResource(resources, "WarningTextFg", "#D2A852");
+                SetBrushResource(resources, "TextPrimary", "#CCCCCC");
+                SetBrushResource(resources, "TextStrong", "#FFFFFF");
+                SetBrushResource(resources, "TextSecondary", "#9D9D9D");
+                SetBrushResource(resources, "TextMuted", "#6E7681");
+                SetBrushResource(resources, "ActivityIconInactive", "#868686");
+                SetBrushResource(resources, "ActivityIconActive", "#FFFFFF");
+                SetBrushResource(resources, "CodeEditorBg", "#1A1A1A");
+                SetBrushResource(resources, "CodeEditorFg", "#D4D4D4");
+                SetBrushResource(resources, "CodeEditorBorder", "#2B2B2B");
+                SetBrushResource(resources, "StatusBarBg", "#181818");
+                SetBrushResource(resources, "StatusBarBorder", "#2B2B2B");
+                SetBrushResource(resources, "StatusBarFg", "#CCCCCC");
+                SetBrushResource(resources, "StatusRemoteBg", "#0078D4");
+                SetBrushResource(resources, "StatusRemoteFg", "#FFFFFF");
+                SetBrushResource(resources, "GridHeaderBg", "#181818");
+                SetBrushResource(resources, "GridRowAltBg", "#232324");
+                SetBrushResource(resources, "ScrollThumbBg", "#424242");
+                SetBrushResource(resources, "ScrollThumbHoverBg", "#4F4F4F");
+
+                if (txtThemeIcon != null) txtThemeIcon.Text = "☀";
+                if (txtThemeLabel != null) txtThemeLabel.Text = "Light Mode";
+                if (txtStatusTheme != null) txtStatusTheme.Text = "Theme: Dark Modern";
+            }
+            else
+            {
+                // VS Code Light Modern
+                SetBrushResource(resources, "TitleBarBg", "#F8F8F8");
+                SetBrushResource(resources, "ActivityBarBg", "#F8F8F8");
+                SetBrushResource(resources, "SidebarBg", "#F8F8F8");
+                SetBrushResource(resources, "EditorBg", "#FFFFFF");
+                SetBrushResource(resources, "SurfaceBg", "#F8F8F8");
+                SetBrushResource(resources, "CommandCenterBg", "#EFEFEF");
+                SetBrushResource(resources, "CommandCenterBorder", "#D8D8D8");
+                SetBrushResource(resources, "InputBg", "#FFFFFF");
+                SetBrushResource(resources, "InputBorder", "#CECECE");
+                SetBrushResource(resources, "BorderSubtle", "#E5E5E5");
+                SetBrushResource(resources, "TabInactiveBg", "#F8F8F8");
+                SetBrushResource(resources, "TabActiveBg", "#FFFFFF");
+                SetBrushResource(resources, "HoverBg", "#ECECEC");
+                SetBrushResource(resources, "SelectionBg", "#E4F1FA");
+                SetBrushResource(resources, "ButtonSecondaryBg", "#F3F3F3");
+                SetBrushResource(resources, "ButtonSecondaryHoverBg", "#E6E6E6");
+                SetBrushResource(resources, "ButtonSecondaryBorder", "#CECECE");
+                SetBrushResource(resources, "AccentBrush", "#005FB8");
+                SetBrushResource(resources, "AccentHoverBrush", "#02539E");
+                SetBrushResource(resources, "AccentSubtleBg", "#EBF3FC");
+                SetBrushResource(resources, "AccentSubtleBorder", "#BDD8F5");
+                SetBrushResource(resources, "DangerBrush", "#CD3131");
+                SetBrushResource(resources, "DangerSubtleBg", "#FDECEC");
+                SetBrushResource(resources, "SuccessBrush", "#1A7F37");
+                SetBrushResource(resources, "SuccessSubtleBg", "#EAF7EE");
+                SetBrushResource(resources, "SuccessSubtleBorder", "#C2E5CD");
+                SetBrushResource(resources, "WarningBg", "#FFF8E6");
+                SetBrushResource(resources, "WarningBorder", "#E8D29B");
+                SetBrushResource(resources, "WarningTitleFg", "#8A5A00");
+                SetBrushResource(resources, "WarningTextFg", "#6B4C11");
+                SetBrushResource(resources, "TextPrimary", "#3B3B3B");
+                SetBrushResource(resources, "TextStrong", "#1F1F1F");
+                SetBrushResource(resources, "TextSecondary", "#616161");
+                SetBrushResource(resources, "TextMuted", "#8A8A8A");
+                SetBrushResource(resources, "ActivityIconInactive", "#6E6E6E");
+                SetBrushResource(resources, "ActivityIconActive", "#1F1F1F");
+                SetBrushResource(resources, "CodeEditorBg", "#FAFAFA");
+                SetBrushResource(resources, "CodeEditorFg", "#1F1F1F");
+                SetBrushResource(resources, "CodeEditorBorder", "#DFDFDF");
+                SetBrushResource(resources, "StatusBarBg", "#F8F8F8");
+                SetBrushResource(resources, "StatusBarBorder", "#E5E5E5");
+                SetBrushResource(resources, "StatusBarFg", "#3B3B3B");
+                SetBrushResource(resources, "StatusRemoteBg", "#005FB8");
+                SetBrushResource(resources, "StatusRemoteFg", "#FFFFFF");
+                SetBrushResource(resources, "GridHeaderBg", "#F5F5F5");
+                SetBrushResource(resources, "GridRowAltBg", "#FAFAFA");
+                SetBrushResource(resources, "ScrollThumbBg", "#C4C4C4");
+                SetBrushResource(resources, "ScrollThumbHoverBg", "#A8A8A8");
+
+                if (txtThemeIcon != null) txtThemeIcon.Text = "☾";
+                if (txtThemeLabel != null) txtThemeLabel.Text = "Dark Mode";
+                if (txtStatusTheme != null) txtStatusTheme.Text = "Theme: Light Modern";
+            }
+
+            if (savePreference)
+                SaveThemePreference(isDark);
         }
 
         private void ShowError(string message)

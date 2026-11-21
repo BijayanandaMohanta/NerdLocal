@@ -4,6 +4,103 @@
              xmlns:local="clr-namespace:NerdLocal"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!-- VS Code Dark Modern (Default Palette) -->
+        <SolidColorBrush x:Key="TitleBarBg" Color="#181818"/>
+        <SolidColorBrush x:Key="ActivityBarBg" Color="#181818"/>
+        <SolidColorBrush x:Key="SidebarBg" Color="#181818"/>
+        <SolidColorBrush x:Key="EditorBg" Color="#1F1F1F"/>
+        <SolidColorBrush x:Key="SurfaceBg" Color="#252526"/>
+        <SolidColorBrush x:Key="CommandCenterBg" Color="#242424"/>
+        <SolidColorBrush x:Key="CommandCenterBorder" Color="#3C3C3C"/>
+        <SolidColorBrush x:Key="InputBg" Color="#313131"/>
+        <SolidColorBrush x:Key="InputBorder" Color="#3C3C3C"/>
+        <SolidColorBrush x:Key="BorderSubtle" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="TabInactiveBg" Color="#181818"/>
+        <SolidColorBrush x:Key="TabActiveBg" Color="#1F1F1F"/>
+        <SolidColorBrush x:Key="HoverBg" Color="#2A2D2E"/>
+        <SolidColorBrush x:Key="SelectionBg" Color="#04395E"/>
+        <SolidColorBrush x:Key="ButtonSecondaryBg" Color="#313131"/>
+        <SolidColorBrush x:Key="ButtonSecondaryHoverBg" Color="#3C3C3C"/>
+        <SolidColorBrush x:Key="ButtonSecondaryBorder" Color="#3C3C3C"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#026EC1"/>
+        <SolidColorBrush x:Key="AccentSubtleBg" Color="#12293D"/>
+        <SolidColorBrush x:Key="AccentSubtleBorder" Color="#1E4B73"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#F14C4C"/>
+        <SolidColorBrush x:Key="DangerSubtleBg" Color="#3A1D1E"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#3FB950"/>
+        <SolidColorBrush x:Key="SuccessSubtleBg" Color="#162C1E"/>
+        <SolidColorBrush x:Key="SuccessSubtleBorder" Color="#244B31"/>
+        <SolidColorBrush x:Key="WarningBg" Color="#2B2315"/>
+        <SolidColorBrush x:Key="WarningBorder" Color="#594522"/>
+        <SolidColorBrush x:Key="WarningTitleFg" Color="#E3B341"/>
+        <SolidColorBrush x:Key="WarningTextFg" Color="#D2A852"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#CCCCCC"/>
+        <SolidColorBrush x:Key="TextStrong" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9D9D9D"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#6E7681"/>
+        <SolidColorBrush x:Key="ActivityIconInactive" Color="#868686"/>
+        <SolidColorBrush x:Key="ActivityIconActive" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="CodeEditorBg" Color="#1A1A1A"/>
+        <SolidColorBrush x:Key="CodeEditorFg" Color="#D4D4D4"/>
+        <SolidColorBrush x:Key="CodeEditorBorder" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="StatusBarBg" Color="#181818"/>
+        <SolidColorBrush x:Key="StatusBarBorder" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="StatusBarFg" Color="#CCCCCC"/>
+        <SolidColorBrush x:Key="StatusRemoteBg" Color="#0078D4"/>
+        <SolidColorBrush x:Key="StatusRemoteFg" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="GridHeaderBg" Color="#181818"/>
+        <SolidColorBrush x:Key="GridRowAltBg" Color="#232324"/>
+        <SolidColorBrush x:Key="ScrollThumbBg" Color="#424242"/>
+        <SolidColorBrush x:Key="ScrollThumbHoverBg" Color="#4F4F4F"/>
+
+        <!-- VS Code Default Secondary Button -->
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource ButtonSecondaryBg}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonSecondaryBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="ButtonBorder"
+                                CornerRadius="2"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource ButtonSecondaryHoverBg}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Opacity"
+                                        Value="0.82"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Opacity"
+                                        Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

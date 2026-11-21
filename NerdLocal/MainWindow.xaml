@@ -1,52 +1,66 @@
 ﻿<Window x:Class="NerdLocal.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="NerdLocal - Local Development Manager"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="NerdLocal — Local Development Manager"
         Width="1360"
         Height="820"
-        MinWidth="1000"
-        MinHeight="650"
+        MinWidth="1020"
+        MinHeight="640"
         WindowStartupLocation="CenterScreen"
-        Background="#F2F4F7"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="{DynamicResource EditorBg}"
+        Foreground="{DynamicResource TextPrimary}"
         FontFamily="Segoe UI"
         FontSize="12"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True">
+        SnapsToDevicePixels="True"
+        StateChanged="Window_StateChanged">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="35"
+                            ResizeBorderThickness="6"
+                            CornerRadius="0"
+                            GlassFrameThickness="1"
+                            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
 
     <Window.Resources>
 
-        <!-- COLORS -->
-        <SolidColorBrush x:Key="AccentBrush" Color="#E84444"/>
-        <SolidColorBrush x:Key="AccentHoverBrush" Color="#CC3038"/>
-        <SolidColorBrush x:Key="PageBrush" Color="#F2F4F7"/>
-        <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="BorderBrushSoft" Color="#DCE1E8"/>
-        <SolidColorBrush x:Key="TextBrush" Color="#202938"/>
-        <SolidColorBrush x:Key="MutedBrush" Color="#778195"/>
-
         <!-- GENERAL TEXT -->
         <Style TargetType="{x:Type TextBlock}">
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!-- SECTION HEADER -->
+        <Style x:Key="SidebarSectionTitle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
 
         <!-- FIELD LABEL -->
         <Style x:Key="FieldLabel" TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#465166"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
 
-        <!-- FLAT TEXTBOX -->
+        <!-- VS CODE FLAT TEXTBOX -->
         <Style TargetType="{x:Type TextBox}">
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Height" Value="30"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#202938"/>
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#D5DAE2"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource TextStrong}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBg}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
@@ -54,18 +68,19 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Border x:Name="InputBorder"
+                                CornerRadius="2"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
                             <ScrollViewer x:Name="PART_ContentHost"
                                           Margin="0"
-                                          VerticalAlignment="Center"/>
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="InputBorder"
                                         Property="BorderBrush"
-                                        Value="#E84444"/>
+                                        Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="InputBorder"
@@ -78,46 +93,37 @@
             </Setter>
         </Style>
 
-        <!-- FLAT BUTTONS -->
-        <Style TargetType="{x:Type Button}">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#354052"/>
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#D5DAE2"/>
+        <!-- CODE / OUTPUT EDITOR TEXTBOX -->
+        <Style x:Key="CodeEditorBox" TargetType="{x:Type TextBox}">
+            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Foreground" Value="{DynamicResource CodeEditorFg}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource CodeEditorBg}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CodeEditorBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="ButtonBorder"
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="EditorBorder"
+                                CornerRadius="2"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                RecognizesAccessKey="True"/>
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="0"
+                                          VerticalAlignment="Stretch"
+                                          HorizontalAlignment="Stretch"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder"
-                                        Property="Background"
-                                        Value="#F0F2F5"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder"
-                                        Property="Opacity"
-                                        Value="0.75"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonBorder"
-                                        Property="Opacity"
-                                        Value="0.5"/>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="EditorBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -125,19 +131,24 @@
             </Setter>
         </Style>
 
-        <!-- PRIMARY ACTION -->
-        <Style x:Key="RedButton"
-               TargetType="{x:Type Button}"
-               BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Height" Value="34"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Background" Value="#E84444"/>
+        <!-- VS CODE PRIMARY ACCENT BUTTON -->
+        <Style x:Key="PrimaryButton"
+               TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#E84444"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border x:Name="ButtonBorder"
+                                CornerRadius="2"
+                                Padding="{TemplateBinding Padding}"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
@@ -149,15 +160,15 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
-                                        Value="#CC3038"/>
+                                        Value="{DynamicResource AccentHoverBrush}"/>
                                 <Setter TargetName="ButtonBorder"
                                         Property="BorderBrush"
-                                        Value="#CC3038"/>
+                                        Value="{DynamicResource AccentHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Opacity"
-                                        Value="0.8"/>
+                                        Value="0.85"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder"
@@ -170,59 +181,371 @@
             </Setter>
         </Style>
 
-        <!-- COMPACT DROPDOWN -->
-        <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="7,2"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+        <!-- SUBTLE DANGER BUTTON -->
+        <Style x:Key="DangerGhostButton"
+               TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#D5DAE2"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="ButtonBorder"
+                                CornerRadius="2"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource DangerSubtleBg}"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource DangerBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- TABS -->
-        <Style TargetType="{x:Type TabControl}">
+        <!-- TITLE BAR CAPTION BUTTONS -->
+        <Style x:Key="CaptionButton" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="35"/>
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Bg" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource HoverBg}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseCaptionButton" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Bg" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#E81123"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TITLE BAR THEME TOGGLE BUTTON -->
+        <Style x:Key="TitleToolbarButton" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="Background" Value="{DynamicResource CommandCenterBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CommandCenterBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Bd"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ACTIVITY BAR ICON RADIO BUTTON -->
+        <Style x:Key="ActivityBarItem" TargetType="{x:Type RadioButton}">
+            <Setter Property="Width" Value="48"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ActivityIconInactive}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Grid Background="Transparent">
+                            <Border x:Name="ActiveBar"
+                                    Width="2"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Stretch"
+                                    Background="{DynamicResource AccentBrush}"
+                                    Visibility="Collapsed"/>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource ActivityIconActive}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource ActivityIconActive}"/>
+                                <Setter TargetName="ActiveBar" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- STATUS BAR CLICKABLE ITEM -->
+        <Style x:Key="StatusBarButton" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Padding" Value="7,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource StatusBarFg}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Bd"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- THEMED COMBOBOX -->
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="26"/>
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Border"
+                        Grid.ColumnSpan="2"
+                        CornerRadius="2"
+                        Background="{DynamicResource InputBg}"
+                        BorderBrush="{DynamicResource InputBorder}"
+                        BorderThickness="1"/>
+                <Path Grid.Column="1"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Data="M 0 0 L 4 4 L 8 0"
+                      Stroke="{DynamicResource TextSecondary}"
+                      StrokeThickness="1.3"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <Style TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="Bd"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextStrong}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBg}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid>
+                            <ToggleButton Name="ToggleButton"
+                                          Template="{StaticResource ComboBoxToggleButton}"
+                                          Focusable="False"
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press"/>
+                            <ContentPresenter Name="ContentSite"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              Margin="9,3,28,3"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"/>
+                            <Popup Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Grid Name="DropDown"
+                                      SnapsToDevicePixels="True"
+                                      MinWidth="{TemplateBinding ActualWidth}"
+                                      MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder"
+                                            Background="{DynamicResource SurfaceBg}"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource InputBorder}"/>
+                                    <ScrollViewer Margin="1" SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- VS CODE EDITOR TABS -->
+        <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="{DynamicResource EditorBg}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabControl}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="35"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0"
+                                    Background="{DynamicResource TabInactiveBg}"
+                                    BorderBrush="{DynamicResource BorderSubtle}"
+                                    BorderThickness="0,0,0,1">
+                                <TabPanel IsItemsHost="True"
+                                          Margin="0"
+                                          Background="Transparent"/>
+                            </Border>
+                            <Border Grid.Row="1"
+                                    Background="{DynamicResource EditorBg}">
+                                <ContentPresenter ContentSource="SelectedContent"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="{x:Type TabItem}">
-            <Setter Property="Foreground" Value="#667085"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="Margin" Value="0,0,2,0"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TabItem}">
-                        <Border x:Name="TabBorder"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="0,0,0,2"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter
-                                ContentSource="Header"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"/>
-                        </Border>
+                        <Grid>
+                            <Border x:Name="TabBorder"
+                                    Background="{DynamicResource TabInactiveBg}"
+                                    BorderBrush="{DynamicResource BorderSubtle}"
+                                    BorderThickness="0,0,1,0"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter ContentSource="Header"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                            <Border x:Name="TopAccent"
+                                    Height="2"
+                                    VerticalAlignment="Top"
+                                    Background="{DynamicResource AccentBrush}"
+                                    Visibility="Collapsed"/>
+                        </Grid>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Foreground"
-                                        Value="#E84444"/>
-                                <Setter TargetName="TabBorder"
-                                        Property="BorderBrush"
-                                        Value="#E84444"/>
-                                <Setter TargetName="TabBorder"
-                                        Property="Background"
-                                        Value="#FFF5F5"/>
-                            </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="TabBorder"
                                         Property="Background"
-                                        Value="#F5F6F8"/>
+                                        Value="{DynamicResource HoverBg}"/>
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource TextStrong}"/>
+                                <Setter TargetName="TabBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource TabActiveBg}"/>
+                                <Setter TargetName="TopAccent"
+                                        Property="Visibility"
+                                        Value="Visible"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -230,640 +553,930 @@
             </Setter>
         </Style>
 
-        <!-- DATA GRID -->
+        <!-- VS CODE DATA GRID -->
         <Style TargetType="{x:Type DataGrid}">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="Foreground" Value="#354052"/>
-            <Setter Property="BorderBrush" Value="#DCE1E8"/>
+            <Setter Property="Background" Value="{DynamicResource EditorBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="RowBackground" Value="#FFFFFF"/>
-            <Setter Property="AlternatingRowBackground" Value="#F8F9FB"/>
+            <Setter Property="RowBackground" Value="{DynamicResource EditorBg}"/>
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource GridRowAltBg}"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#E9EDF2"/>
-            <Setter Property="VerticalGridLinesBrush" Value="#E9EDF2"/>
-            <Setter Property="RowHeight" Value="34"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderSubtle}"/>
+            <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource BorderSubtle}"/>
+            <Setter Property="RowHeight" Value="36"/>
             <Setter Property="ColumnHeaderHeight" Value="32"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="CanUserAddRows" Value="False"/>
             <Setter Property="CanUserDeleteRows" Value="False"/>
-            <Setter Property="CanUserResizeRows" Value="False"/>
-            <Setter Property="SelectionMode" Value="Single"/>
             <Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="AutoGenerateColumns" Value="False"/>
         </Style>
 
         <Style TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="Background" Value="#F1F3F6"/>
-            <Setter Property="Foreground" Value="#596579"/>
+            <Setter Property="Background" Value="{DynamicResource GridHeaderBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Padding" Value="9,0"/>
-            <Setter Property="BorderBrush" Value="#DCE1E8"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="{DynamicResource EditorBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="{DynamicResource GridRowAltBg}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource HoverBg}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SelectionBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextStrong}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type DataGridCell}">
-            <Setter Property="Padding" Value="9,0"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Border Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
     </Window.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <!-- ROOT WORKBENCH SHELL -->
+    <Border x:Name="RootWindowBorder"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1"
+            Background="{DynamicResource EditorBg}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="22"/>
+            </Grid.RowDefinitions>
 
-        <!-- HEADER -->
-        <Border Grid.Row="0"
-                Background="#FFFFFF"
-                BorderBrush="#DCE1E8"
-                BorderThickness="0,0,0,1"
-                Padding="20,10">
+            <!-- 1. VS CODE CUSTOM TITLE & COMMAND BAR -->
+            <Border Grid.Row="0"
+                    Background="{DynamicResource TitleBarBg}"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                    <!-- Brand / Title -->
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="12,0,16,0">
+                        <Border Width="18"
+                                Height="18"
+                                CornerRadius="3"
+                                Background="{DynamicResource AccentBrush}"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="N"
+                                       Foreground="#FFFFFF"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
 
-                <StackPanel Orientation="Horizontal"
-                            VerticalAlignment="Center">
+                        <TextBlock Text="NerdLocal"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextStrong}"
+                                   Margin="8,0,0,0"/>
 
-                    <Border Width="36"
-                            Height="36"
-                            Background="#E84444"
-                            VerticalAlignment="Center">
-                        <TextBlock Text="N"
-                                   Foreground="#FFFFFF"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="—  Local Development Workbench"
+                                   FontSize="11.5"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="7,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- VS Code Centered Command Pill -->
+                    <Border Grid.Column="1"
+                            Height="23"
+                            MaxWidth="440"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            CornerRadius="5"
+                            Padding="14,0"
+                            Background="{DynamicResource CommandCenterBg}"
+                            BorderBrush="{DynamicResource CommandCenterBorder}"
+                            BorderThickness="1">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <Path Data="M 6.5,1 A 5.5,5.5 0 1 0 6.5,12 A 5.5,5.5 0 1 0 6.5,1 Z M 10.5,10.5 L 14,14"
+                                  Stroke="{DynamicResource TextSecondary}"
+                                  StrokeThickness="1.2"
+                                  Width="13"
+                                  Height="13"
+                                  Stretch="Uniform"
+                                  Margin="0,0,7,0"/>
+                            <TextBlock x:Name="txtCommandBarHint"
+                                       Text="NerdLocal  •  Domain Manager"
+                                       FontSize="11.5"
+                                       Foreground="{DynamicResource TextSecondary}"/>
+                        </StackPanel>
                     </Border>
 
-                    <StackPanel Margin="10,0,0,0"
+                    <!-- Right Toolbar: Domain Counter + Dark/Light Theme Toggle -->
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="10,0,8,0">
+
+                        <Border CornerRadius="4"
+                                Padding="8,2"
+                                Margin="0,0,8,0"
+                                Background="{DynamicResource AccentSubtleBg}"
+                                BorderBrush="{DynamicResource AccentSubtleBorder}"
+                                BorderThickness="1"
                                 VerticalAlignment="Center">
-                        <TextBlock Text="NerdLocal"
-                                   FontSize="20"
-                                   FontWeight="Bold"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="txtTotalDomains"
+                                           Text="0"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource TextStrong}"/>
+                                <TextBlock Text=" domains"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
 
-                        <TextBlock Text="Local Development Manager"
-                                   FontSize="11"
-                                   Foreground="#778195"
-                                   Margin="0,1,0,0"/>
+                        <Button x:Name="btnThemeToggle"
+                                Style="{StaticResource TitleToolbarButton}"
+                                Click="ToggleTheme_Click"
+                                ToolTip="Switch between VS Code Dark Modern and Light Modern">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="txtThemeIcon"
+                                           Text="☀"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextStrong}"
+                                           Margin="0,0,5,0"/>
+                                <TextBlock x:Name="txtThemeLabel"
+                                           Text="Light Mode"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
-                </StackPanel>
 
-                <Border Grid.Column="1"
-                        Background="#FFF5F5"
-                        BorderBrush="#F5D4D4"
-                        BorderThickness="1"
-                        Padding="12,5"
-                        VerticalAlignment="Center">
-                    <StackPanel>
-                        <TextBlock Text="CONFIGURED DOMAINS"
-                                   FontSize="9"
-                                   FontWeight="SemiBold"
-                                   Foreground="#A34A4A"/>
+                    <!-- Window Caption Buttons -->
+                    <StackPanel Grid.Column="3"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Stretch">
+                        <Button Style="{StaticResource CaptionButton}"
+                                Click="MinimizeWindow_Click"
+                                ToolTip="Minimize">
+                            <Path Data="M 0,0 L 10,0"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1"/>
+                        </Button>
 
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="txtTotalDomains"
-                                       Text="0"
-                                       FontSize="20"
-                                       FontWeight="Bold"
-                                       Foreground="#E84444"/>
+                        <Button x:Name="btnMaxRestore"
+                                Style="{StaticResource CaptionButton}"
+                                Click="MaximizeRestoreWindow_Click"
+                                ToolTip="Maximize">
+                            <Path x:Name="pathMaxRestore"
+                                  Data="M 0,0 L 9,0 L 9,9 L 0,9 Z"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1"/>
+                        </Button>
 
-                            <TextBlock Text=" domains"
-                                       FontSize="11"
-                                       Foreground="#778195"
-                                       Margin="6,4,0,0"/>
+                        <Button Style="{StaticResource CloseCaptionButton}"
+                                Click="CloseWindow_Click"
+                                ToolTip="Close">
+                            <Path Data="M 0,0 L 10,10 M 10,0 L 0,10"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. MAIN WORKBENCH BODY (ACTIVITY BAR + VIEWS) -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- VS CODE LEFT ACTIVITY BAR -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource ActivityBarBg}"
+                        BorderBrush="{DynamicResource BorderSubtle}"
+                        BorderThickness="0,0,1,0">
+                    <DockPanel LastChildFill="False">
+                        <StackPanel DockPanel.Dock="Top">
+                            <!-- Explorer / Domains -->
+                            <RadioButton x:Name="navDomains"
+                                         GroupName="WorkbenchNav"
+                                         Style="{StaticResource ActivityBarItem}"
+                                         IsChecked="True"
+                                         Tag="0"
+                                         Click="ActivityNav_Click"
+                                         ToolTip="Domain Manager">
+                                <Path Data="M 2,3 L 9,3 L 11,5 L 18,5 L 18,17 L 2,17 Z M 2,8 L 18,8"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                      StrokeThickness="1.5"
+                                      Width="20"
+                                      Height="20"
+                                      Stretch="Uniform"/>
+                            </RadioButton>
+
+                            <!-- Config Files -->
+                            <RadioButton x:Name="navConfig"
+                                         GroupName="WorkbenchNav"
+                                         Style="{StaticResource ActivityBarItem}"
+                                         Tag="1"
+                                         Click="ActivityNav_Click"
+                                         ToolTip="Config Files Editor">
+                                <Path Data="M 4,2 L 13,2 L 17,6 L 17,18 L 4,18 Z M 13,2 L 13,6 L 17,6 M 7,10 L 14,10 M 7,13.5 L 14,13.5"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                      StrokeThickness="1.5"
+                                      Width="20"
+                                      Height="20"
+                                      Stretch="Uniform"/>
+                            </RadioButton>
+
+                            <!-- Tools -->
+                            <RadioButton x:Name="navTools"
+                                         GroupName="WorkbenchNav"
+                                         Style="{StaticResource ActivityBarItem}"
+                                         Tag="2"
+                                         Click="ActivityNav_Click"
+                                         ToolTip="XAMPP &amp; System Tools">
+                                <Path Data="M 4,6 L 16,6 M 4,12 L 16,12 M 4,18 L 16,18 M 7,4 L 7,8 M 13,10 L 13,14 M 9,16 L 9,20"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                      StrokeThickness="1.5"
+                                      Width="20"
+                                      Height="20"
+                                      Stretch="Uniform"/>
+                            </RadioButton>
+
+                            <!-- Curl Checker -->
+                            <RadioButton x:Name="navCurl"
+                                         GroupName="WorkbenchNav"
+                                         Style="{StaticResource ActivityBarItem}"
+                                         Tag="3"
+                                         Click="ActivityNav_Click"
+                                         ToolTip="Curl Response Header Inspector">
+                                <Path Data="M 3,5 L 9,10 L 3,15 M 11,15 L 17,15"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                      StrokeThickness="1.7"
+                                      Width="19"
+                                      Height="19"
+                                      Stretch="Uniform"/>
+                            </RadioButton>
                         </StackPanel>
-                    </StackPanel>
+
+                        <!-- Bottom Theme Shortcut in Activity Bar -->
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,6">
+                            <Button Width="48"
+                                    Height="44"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="ToggleTheme_Click"
+                                    ToolTip="Toggle Color Theme (Dark / Light)">
+                                <Path Data="M 10,2 A 8,8 0 1 0 18,10 A 6,6 0 1 1 10,2 Z"
+                                      Stroke="{DynamicResource ActivityIconInactive}"
+                                      StrokeThickness="1.5"
+                                      Width="18"
+                                      Height="18"
+                                      Stretch="Uniform"/>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
-            </Grid>
-        </Border>
 
-        <!-- MAIN CONTENT -->
-        <Border Grid.Row="1"
-                Margin="12,10,12,10"
-                Background="#FFFFFF"
-                BorderBrush="#DCE1E8"
-                BorderThickness="1">
+                <!-- MAIN EDITOR / WORKBENCH TABS -->
+                <TabControl x:Name="MainTabs"
+                            Grid.Column="1"
+                            SelectionChanged="MainTabs_SelectionChanged">
 
-            <TabControl Margin="0">
-
-                <!-- DOMAIN MANAGER -->
-                <TabItem Header="Domain Manager">
-                    <Grid Margin="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="285"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- LEFT FORM -->
-                        <Border Grid.Column="0"
-                                Background="#FFFFFF"
-                                BorderBrush="#DCE1E8"
-                                BorderThickness="1"
-                                Padding="12">
-
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <StackPanel Grid.Row="0"
-                                            Margin="0,0,0,14">
-                                    <TextBlock x:Name="txtDomainFormTitle"
-                                               Text="Add New Domain"
-                                               FontSize="17"
-                                               FontWeight="Bold"/>
-
-                                    <TextBlock Text="Configure a local website."
-                                               FontSize="11"
-                                               Foreground="#778195"
-                                               Margin="0,3,0,0"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="1">
-                                    <TextBlock Text="DOMAIN NAME"
-                                               Style="{StaticResource FieldLabel}"/>
-
-                                    <TextBox x:Name="txtDomain"
-                                             ToolTip="Example: myproject.local"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2">
-                                    <TextBlock Text="PROJECT DIRECTORY"
-                                               Style="{StaticResource FieldLabel}"/>
-
-                                    <TextBox x:Name="txtPath"
-                                             ToolTip="Project web root"/>
-                                </StackPanel>
-
-                                <Button Grid.Row="3"
-                                        Content="Browse Project Folder"
-                                        Click="btnBrowse_Click"
-                                        Margin="0,0,0,14"/>
-
-                                <StackPanel Grid.Row="4">
-                                    <TextBlock Text="APACHE PORT"
-                                               Style="{StaticResource FieldLabel}"/>
-
-                                    <ComboBox x:Name="cmbPort"
-                                              SelectedIndex="0">
-                                        <ComboBoxItem Content="80"/>
-                                        <ComboBoxItem Content="8080"/>
-                                        <ComboBoxItem Content="8081"/>
-                                        <ComboBoxItem Content="8082"/>
-                                        <ComboBoxItem Content="3000"/>
-                                        <ComboBoxItem Content="5000"/>
-                                        <ComboBoxItem Content="9000"/>
-                                    </ComboBox>
-                                </StackPanel>
-
-                                <Button Grid.Row="5"
-                                        x:Name="btnAddDomain"
-                                        Content="+   Add Domain"
-                                        Style="{StaticResource RedButton}"
-                                        Click="btnAddDomain_Click"
-                                        Margin="0,0,0,14"/>
-
-                                <Border Grid.Row="6"
-                                        Background="#FFF8F0"
-                                        BorderBrush="#F0DFC9"
-                                        BorderThickness="1"
-                                        Padding="9">
-
-                                    <StackPanel>
-                                        <TextBlock Text="QUICK NOTES"
-                                                   FontWeight="Bold"
-                                                   FontSize="10"
-                                                   Foreground="#925A20"
-                                                   Margin="0,0,0,5"/>
-
-                                        <TextBlock Text="• Use .local or .test domains."
-                                                   FontSize="10"
-                                                   Foreground="#785D3C"
-                                                   Margin="0,2"/>
-
-                                        <TextBlock Text="• Select the correct web root."
-                                                   FontSize="10"
-                                                   Foreground="#785D3C"
-                                                   Margin="0,2"/>
-
-                                        <TextBlock Text="• Run as Administrator."
-                                                   FontSize="10"
-                                                   Foreground="#785D3C"
-                                                   Margin="0,2"/>
-
-                                        <TextBlock Text="• Backups are created before changes."
-                                                   FontSize="10"
-                                                   Foreground="#785D3C"
-                                                   Margin="0,2"/>
-
-                                        <TextBlock Text="• Restart Apache after changes."
-                                                   FontSize="10"
-                                                   Foreground="#785D3C"
-                                                   Margin="0,2"/>
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-                        </Border>
-
-                        <!-- RIGHT DOMAIN TABLE -->
-                        <Border Grid.Column="2"
-                                Background="#FFFFFF"
-                                BorderBrush="#DCE1E8"
-                                BorderThickness="1"
-                                Padding="12">
-
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <Grid Grid.Row="0"
-                                      Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel>
-                                        <TextBlock Text="Existing Domains"
-                                                   FontSize="17"
-                                                   FontWeight="Bold"/>
-
-                                        <TextBlock Text="Configured local websites"
-                                                   FontSize="11"
-                                                   Foreground="#778195"
-                                                   Margin="0,3,0,0"/>
-                                    </StackPanel>
-
-                                    <Border Grid.Column="1"
-                                            Background="#EAF6EE"
-                                            BorderBrush="#D3EBDD"
-                                            BorderThickness="1"
-                                            Padding="8,4"
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="LOCAL HOSTS"
-                                                   FontSize="9"
-                                                   FontWeight="Bold"
-                                                   Foreground="#23834F"/>
-                                    </Border>
-                                </Grid>
-
-                                <TextBox Grid.Row="1"
-                                         x:Name="txtSearch"
-                                         Height="32"
-                                         Margin="0,0,0,10"
-                                         ToolTip="Search by domain, path, or port"/>
-
-                                <DataGrid Grid.Row="2"
-                                          x:Name="DomainGrid"
-                                          IsReadOnly="True"
-                                          CanUserSortColumns="True"
-                                          CanUserReorderColumns="True"
-                                          HorizontalScrollBarVisibility="Auto"
-                                          VerticalScrollBarVisibility="Auto">
-
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="DOMAIN"
-                                                            Width="180"
-                                                            Binding="{Binding Domain}"/>
-
-                                        <DataGridTextColumn Header="PORT"
-                                                            Width="70"
-                                                            Binding="{Binding Port}"/>
-
-                                        <DataGridTextColumn Header="PROJECT DIRECTORY"
-                                                            Width="*"
-                                                            MinWidth="160"
-                                                            Binding="{Binding Path}"/>
-
-                                        <DataGridTemplateColumn Header="COPY" Width="55">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Button Content="⧉"
-                                                            Tag="{Binding}"
-                                                            ToolTip="Copy domain URL"
-                                                            Click="CopyDomain_Click"
-                                                            Height="24"
-                                                            Padding="5,0"/>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-
-                                        <DataGridTemplateColumn Header="ACTIONS" Width="120">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Button Content="Edit"
-                                                                Tag="{Binding}"
-                                                                Click="EditDomain_Click"
-                                                                Height="24"
-                                                                Padding="7,0"
-                                                                Margin="0,0,5,0"/>
-                                                        <Button Content="Delete"
-                                                                Tag="{Binding}"
-                                                                Click="DeleteDomain_Click"
-                                                                Height="24"
-                                                                Padding="7,0"/>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-
-                                <TextBlock Grid.Row="3"
-                                           Text="Domain changes may require an Apache restart."
-                                           FontSize="10"
-                                           Foreground="#778195"
-                                           Margin="0,9,0,0"/>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </TabItem>
-
-                <!-- CONFIG FILES -->
-                <TabItem Header="Config Files">
-                    <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <Border Grid.Row="0"
-                                BorderBrush="#DCE1E8"
-                                BorderThickness="1"
-                                Padding="12">
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="130"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <TextBlock Grid.Row="0"
-                                           Text="Hosts File"
-                                           Style="{StaticResource FieldLabel}"
-                                           Margin="0,0,10,10"/>
-
-                                <TextBox Grid.Row="0"
-                                         Grid.Column="1"
-                                         x:Name="txtHostsFile"
-                                         Text="C:\Windows\System32\drivers\etc\hosts"/>
-
-                                <TextBlock Grid.Row="1"
-                                           Text="VHosts File"
-                                           Style="{StaticResource FieldLabel}"
-                                           Margin="0,0,10,10"/>
-
-                                <TextBox Grid.Row="1"
-                                         Grid.Column="1"
-                                         x:Name="txtVhostFile"
-                                         Text="C:\xampp\apache\conf\extra\httpd-vhosts.conf"/>
-
-                                <TextBlock Grid.Row="2"
-                                           Text="HTTPD Config"
-                                           Style="{StaticResource FieldLabel}"
-                                           Margin="0"/>
-
-                                <TextBox Grid.Row="2"
-                                         Grid.Column="1"
-                                         x:Name="txtHttpdFile"
-                                         Text="C:\xampp\apache\conf\httpd.conf"
-                                         Margin="0"/>
-                            </Grid>
-                        </Border>
-
-                        <Grid Grid.Row="1"
-                              Margin="0,10,0,10">
+                    <!-- TAB 1: DOMAIN MANAGER -->
+                    <TabItem Header="Domain Manager">
+                        <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="310" MinWidth="260"/>
+                                <ColumnDefinition Width="1"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <WrapPanel>
-                                <Button Content="Load Hosts"
-                                        Click="LoadHosts_Click" Width="93"/>
+                            <!-- VS CODE PRIMARY SIDEBAR: DOMAIN FORM -->
+                            <Border Grid.Column="0"
+                                    Background="{DynamicResource SidebarBg}"
+                                    Padding="16,14">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel>
+                                        <TextBlock Text="EXPLORER : DOMAIN SETUP"
+                                                   Style="{StaticResource SidebarSectionTitle}"/>
 
-                                <Button Content="Load VHosts"
-                                        Click="LoadVHosts_Click" RenderTransformOrigin="0.5,0.5" Width="93">
-                                    <Button.RenderTransform>
-                                        <TransformGroup>
-                                            <ScaleTransform/>
-                                            <SkewTransform/>
-                                            <RotateTransform Angle="-0.664"/>
-                                            <TranslateTransform/>
-                                        </TransformGroup>
-                                    </Button.RenderTransform>
-                                </Button>
+                                        <TextBlock x:Name="txtDomainFormTitle"
+                                                   Text="Add New Domain"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextStrong}"/>
 
-                                <Button Content="Load HTTPD"
-                                        Click="LoadHttpd_Click" Width="98"/>
+                                        <TextBlock Text="Map a local .local or .test hostname to an Apache VirtualHost."
+                                                   FontSize="11.5"
+                                                   Foreground="{DynamicResource TextSecondary}"
+                                                   Margin="0,3,0,16"/>
 
-                                <Button Content="Preview"
-                                        Click="PreviewConfig_Click" Width="74"/>
-                            </WrapPanel>
+                                        <TextBlock Text="DOMAIN NAME"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="txtDomain"
+                                                 ToolTip="Example: myproject.local"/>
 
-                            <Button
-                                    Content="Save File"
-                                    Style="{StaticResource RedButton}"
-                                    Click="SaveConfig_Click"
-                                    Margin="1210,0,0,0" Grid.ColumnSpan="2"/>
+                                        <TextBlock Text="PROJECT DIRECTORY"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="txtPath"
+                                                 ToolTip="Project web root"/>
+
+                                        <Button Content="Browse Folder..."
+                                                Click="btnBrowse_Click"
+                                                Margin="0,0,0,14"/>
+
+                                        <TextBlock Text="APACHE PORT"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <ComboBox x:Name="cmbPort"
+                                                  SelectedIndex="0">
+                                            <ComboBoxItem Content="80"/>
+                                            <ComboBoxItem Content="8080"/>
+                                            <ComboBoxItem Content="8081"/>
+                                            <ComboBoxItem Content="8082"/>
+                                            <ComboBoxItem Content="3000"/>
+                                            <ComboBoxItem Content="5000"/>
+                                            <ComboBoxItem Content="9000"/>
+                                        </ComboBox>
+
+                                        <Grid Margin="0,4,0,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0"
+                                                    x:Name="btnAddDomain"
+                                                    Content="+   Add Domain"
+                                                    Style="{StaticResource PrimaryButton}"
+                                                    Click="btnAddDomain_Click"/>
+
+                                            <Button Grid.Column="1"
+                                                    x:Name="btnCancelEdit"
+                                                    Content="Cancel"
+                                                    Visibility="Collapsed"
+                                                    Click="CancelEdit_Click"
+                                                    Margin="8,0,0,0"/>
+                                        </Grid>
+
+                                        <Border Background="{DynamicResource WarningBg}"
+                                                BorderBrush="{DynamicResource WarningBorder}"
+                                                BorderThickness="1"
+                                                CornerRadius="3"
+                                                Padding="11,9">
+                                            <StackPanel>
+                                                <TextBlock Text="WORKBENCH NOTES"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="10.5"
+                                                           Foreground="{DynamicResource WarningTitleFg}"
+                                                           Margin="0,0,0,5"/>
+
+                                                <TextBlock Text="• Supported TLDs: .local and .test"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource WarningTextFg}"
+                                                           Margin="0,2"/>
+                                                <TextBlock Text="• Point to your project's public/root folder"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource WarningTextFg}"
+                                                           Margin="0,2"/>
+                                                <TextBlock Text="• Automatic .bak backups before every write"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource WarningTextFg}"
+                                                           Margin="0,2"/>
+                                                <TextBlock Text="• Restart Apache in XAMPP to apply changes"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource WarningTextFg}"
+                                                           Margin="0,2"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- VERTICAL SPLITTER LINE -->
+                            <Border Grid.Column="1"
+                                    Background="{DynamicResource BorderSubtle}"/>
+
+                            <!-- RIGHT EDITOR AREA: CONFIGURED DOMAINS TABLE -->
+                            <Border Grid.Column="2"
+                                    Background="{DynamicResource EditorBg}"
+                                    Padding="18,14">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock Text="Configured Virtual Hosts"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextStrong}"/>
+                                            <TextBlock Text="Active local domains parsed from Apache httpd-vhosts.conf"
+                                                       FontSize="11.5"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <Border Grid.Column="1"
+                                                CornerRadius="3"
+                                                Background="{DynamicResource SuccessSubtleBg}"
+                                                BorderBrush="{DynamicResource SuccessSubtleBorder}"
+                                                BorderThickness="1"
+                                                Padding="9,4"
+                                                VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="6"
+                                                         Height="6"
+                                                         Fill="{DynamicResource SuccessBrush}"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,6,0"/>
+                                                <TextBlock Text="LOCALHOST ACTIVE"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource SuccessBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Filter Input -->
+                                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                                        <TextBox x:Name="txtSearch"
+                                                 Height="30"
+                                                 Margin="0"
+                                                 Padding="28,4,8,4"
+                                                 ToolTip="Filter by domain, port, or directory path"/>
+                                        <Path Data="M 6.5,1 A 5.5,5.5 0 1 0 6.5,12 A 5.5,5.5 0 1 0 6.5,1 Z M 10.5,10.5 L 14,14"
+                                              Stroke="{DynamicResource TextSecondary}"
+                                              StrokeThickness="1.2"
+                                              Width="13"
+                                              Height="13"
+                                              Stretch="Uniform"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="9,0,0,0"
+                                              IsHitTestVisible="False"/>
+                                    </Grid>
+
+                                    <DataGrid Grid.Row="2"
+                                              x:Name="DomainGrid"
+                                              AlternationCount="2"
+                                              IsReadOnly="True"
+                                              CanUserSortColumns="True"
+                                              CanUserReorderColumns="True"
+                                              HorizontalScrollBarVisibility="Auto"
+                                              VerticalScrollBarVisibility="Auto">
+
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="DOMAIN"
+                                                                Width="195"
+                                                                Binding="{Binding Domain}"/>
+
+                                            <DataGridTextColumn Header="PORT"
+                                                                Width="75"
+                                                                Binding="{Binding Port}"/>
+
+                                            <DataGridTextColumn Header="PROJECT DIRECTORY"
+                                                                Width="*"
+                                                                MinWidth="180"
+                                                                Binding="{Binding Path}"/>
+
+                                            <DataGridTemplateColumn Header="URL" Width="68">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Button Content="Copy"
+                                                                Tag="{Binding}"
+                                                                ToolTip="Copy http:// domain URL"
+                                                                Click="CopyDomain_Click"
+                                                                Width="48"
+                                                                Height="24"
+                                                                Padding="0"
+                                                                FontSize="11"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
+                                            <DataGridTemplateColumn Header="ACTIONS" Width="146">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    HorizontalAlignment="Left"
+                                                                    VerticalAlignment="Center">
+                                                            <Button Content="Edit"
+                                                                    Tag="{Binding}"
+                                                                    Click="EditDomain_Click"
+                                                                    Width="54"
+                                                                    Height="24"
+                                                                    Padding="0"
+                                                                    FontSize="11"
+                                                                    Margin="0,0,6,0"/>
+                                                            <Button Content="Delete"
+                                                                    Tag="{Binding}"
+                                                                    Style="{StaticResource DangerGhostButton}"
+                                                                    Click="DeleteDomain_Click"
+                                                                    Width="58"
+                                                                    Height="24"
+                                                                    Padding="0"
+                                                                    FontSize="11"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+
+                                    <TextBlock Grid.Row="3"
+                                               Text="Tip: Domain and port edits automatically validate Apache syntax with httpd.exe -t before committing."
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               Margin="0,9,0,0"/>
+                                </Grid>
+                            </Border>
                         </Grid>
+                    </TabItem>
 
-                        <Border Grid.Row="2"
-                                Background="#171D29"
-                                BorderBrush="#303949"
-                                BorderThickness="1"
-                                Padding="5">
+                    <!-- TAB 2: CONFIG FILES -->
+                    <TabItem Header="Config Files">
+                        <Grid Margin="18,14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                            <TextBox x:Name="txtConfigEditor"
-                                     FontFamily="Consolas"
-                                     FontSize="12"
-                                     Foreground="#E3EAF4"
-                                     Background="#171D29"
-                                     BorderThickness="0"
-                                     Padding="9"
+                            <Border Grid.Row="0"
+                                    Background="{DynamicResource SurfaceBg}"
+                                    BorderBrush="{DynamicResource BorderSubtle}"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Padding="14,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Text="HOSTS FILE"
+                                               Style="{StaticResource FieldLabel}"
+                                               Margin="0,0,10,8"/>
+                                    <TextBox Grid.Row="0"
+                                             Grid.Column="1"
+                                             x:Name="txtHostsFile"
+                                             Margin="0,0,0,8"
+                                             Text="C:\Windows\System32\drivers\etc\hosts"/>
+
+                                    <TextBlock Grid.Row="1"
+                                               Text="VHOSTS FILE"
+                                               Style="{StaticResource FieldLabel}"
+                                               Margin="0,0,10,8"/>
+                                    <TextBox Grid.Row="1"
+                                             Grid.Column="1"
+                                             x:Name="txtVhostFile"
+                                             Margin="0,0,0,8"
+                                             Text="C:\xampp\apache\conf\extra\httpd-vhosts.conf"/>
+
+                                    <TextBlock Grid.Row="2"
+                                               Text="HTTPD CONFIG"
+                                               Style="{StaticResource FieldLabel}"
+                                               Margin="0,0,10,0"/>
+                                    <TextBox Grid.Row="2"
+                                             Grid.Column="1"
+                                             x:Name="txtHttpdFile"
+                                             Margin="0"
+                                             Text="C:\xampp\apache\conf\httpd.conf"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Editor Action Bar -->
+                            <Grid Grid.Row="1" Margin="0,12,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <Button Content="Load Hosts"
+                                            Click="LoadHosts_Click"
+                                            Margin="0,0,6,0"/>
+
+                                    <Button Content="Load VHosts"
+                                            Click="LoadVHosts_Click"
+                                            Margin="0,0,6,0"/>
+
+                                    <Button Content="Load HTTPD"
+                                            Click="LoadHttpd_Click"
+                                            Margin="0,0,6,0"/>
+
+                                    <Button Content="File Status"
+                                            Click="PreviewConfig_Click"/>
+                                </WrapPanel>
+
+                                <Button Grid.Column="1"
+                                        Content="Save File"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="SaveConfig_Click"/>
+                            </Grid>
+
+                            <!-- Full Stretch Code Editor -->
+                            <TextBox Grid.Row="2"
+                                     x:Name="txtConfigEditor"
+                                     Style="{StaticResource CodeEditorBox}"
                                      AcceptsReturn="True"
                                      AcceptsTab="True"
                                      SpellCheck.IsEnabled="False"
-                                     VerticalContentAlignment="Top"
                                      VerticalScrollBarVisibility="Auto"
                                      HorizontalScrollBarVisibility="Auto"
-                                     TextWrapping="NoWrap" VerticalAlignment="Top" Height="413"/>
-                        </Border>
-                    </Grid>
-                </TabItem>
-
-                <!-- TOOLS -->
-                <TabItem Header="Tools">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <Grid Margin="10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Configuration Tools"
-                                           FontSize="17"
-                                           FontWeight="Bold"
-                                           Margin="0,0,0,4"/>
-
-                                <TextBlock Text="Open your local configuration files."
-                                           FontSize="11"
-                                           Foreground="#778195"
-                                           Margin="0,0,0,12"/>
-
-                                <Border BorderBrush="#DCE1E8"
-                                        BorderThickness="1"
-                                        Padding="12">
-
-                                    <StackPanel>
-                                        <TextBlock Text="Configuration Files"
-                                                   FontWeight="Bold"
-                                                   FontSize="13"
-                                                   Margin="0,0,0,10"/>
-
-                                        <Button Content="Open Hosts File"
-                                                Click="OpenHostsFile_Click"
-                                                Margin="0,0,0,7"/>
-
-                                        <Button Content="Open VHosts File"
-                                                Click="OpenVHostsFile_Click"
-                                                Margin="0,0,0,7"/>
-
-                                        <Button Content="Open HTTPD Config"
-                                                Click="OpenHttpdFile_Click"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="XAMPP Tools"
-                                           FontSize="17"
-                                           FontWeight="Bold"
-                                           Margin="0,0,0,4"/>
-
-                                <TextBlock Text="Open the XAMPP control panel."
-                                           FontSize="11"
-                                           Foreground="#778195"
-                                           Margin="0,0,0,12"/>
-
-                                <Border BorderBrush="#DCE1E8"
-                                        BorderThickness="1"
-                                        Padding="12">
-
-                                    <StackPanel>
-                                        <TextBlock Text="XAMPP Control Panel"
-                                                   FontWeight="Bold"
-                                                   FontSize="13"
-                                                   Margin="0,0,0,5"/>
-
-                                        <TextBlock Text="Manage Apache and local services."
-                                                   FontSize="11"
-                                                   Foreground="#778195"
-                                                   Margin="0,0,0,12"/>
-
-                                        <Button Content="Open XAMPP Control Panel"
-                                                Style="{StaticResource RedButton}"
-                                                Click="OpenXampp_Click"
-                                                Margin="0,0,0,8"/>
-
-                                        <Button Content="Apache Restart Instructions"
-                                                Click="RestartApache_Click"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Background="#FFF8F0"
-                                        BorderBrush="#F0DFC9"
-                                        BorderThickness="1"
-                                        Padding="10"
-                                        Margin="0,12,0,0">
-
-                                    <StackPanel>
-                                        <TextBlock Text="IMPORTANT"
-                                                   FontSize="10"
-                                                   FontWeight="Bold"
-                                                   Foreground="#925A20"/>
-
-                                        <TextBlock Text="Validate Apache configuration and check its error log if the service fails to start."
-                                                   FontSize="11"
-                                                   Foreground="#785D3C"
-                                                   Margin="0,5,0,0"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
+                                     TextWrapping="NoWrap"/>
                         </Grid>
-                    </ScrollViewer>
-                </TabItem>
+                    </TabItem>
 
-            </TabControl>
-        </Border>
+                    <!-- TAB 3: TOOLS -->
+                    <TabItem Header="Tools">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <Grid Margin="18,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-        <!-- FOOTER -->
-        <Border Grid.Row="2"
-                Background="#FFFFFF"
-                BorderBrush="#DCE1E8"
-                BorderThickness="0,1,0,0"
-                Padding="12,6">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="External Configuration Editors"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextStrong}"
+                                               Margin="0,0,0,4"/>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Launch system configuration files directly in Notepad."
+                                               FontSize="11.5"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               Margin="0,0,0,14"/>
 
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse Width="6"
-                             Height="6"
-                             Fill="#28A66A"
-                             VerticalAlignment="Center"/>
+                                    <Border Background="{DynamicResource SurfaceBg}"
+                                            BorderBrush="{DynamicResource BorderSubtle}"
+                                            BorderThickness="1"
+                                            CornerRadius="3"
+                                            Padding="16">
+                                        <StackPanel>
+                                            <TextBlock Text="QUICK OPEN"
+                                                       Style="{StaticResource SidebarSectionTitle}"/>
 
-                    <TextBlock Text="  NerdLocal"
-                               FontSize="10"
-                               FontWeight="SemiBold"/>
+                                            <Button Content="Open Windows Hosts File"
+                                                    HorizontalContentAlignment="Left"
+                                                    Click="OpenHostsFile_Click"
+                                                    Margin="0,0,0,8"/>
 
-                    <TextBlock Text="  |  Local development environment"
-                               FontSize="10"
-                               Foreground="#778195"/>
-                </StackPanel>
+                                            <Button Content="Open Apache VirtualHosts (httpd-vhosts.conf)"
+                                                    HorizontalContentAlignment="Left"
+                                                    Click="OpenVHostsFile_Click"
+                                                    Margin="0,0,0,8"/>
 
-                <TextBlock Grid.Column="1"
-                           Text="Windows Desktop"
-                           FontSize="10"
-                           Foreground="#778195"/>
+                                            <Button Content="Open Apache Main Config (httpd.conf)"
+                                                    HorizontalContentAlignment="Left"
+                                                    Click="OpenHttpdFile_Click"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="XAMPP Service Control"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextStrong}"
+                                               Margin="0,0,0,4"/>
+
+                                    <TextBlock Text="Manage Apache HTTP Server and local stack services."
+                                               FontSize="11.5"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               Margin="0,0,0,14"/>
+
+                                    <Border Background="{DynamicResource SurfaceBg}"
+                                            BorderBrush="{DynamicResource BorderSubtle}"
+                                            BorderThickness="1"
+                                            CornerRadius="3"
+                                            Padding="16">
+                                        <StackPanel>
+                                            <TextBlock Text="XAMPP CONTROL PANEL"
+                                                       Style="{StaticResource SidebarSectionTitle}"/>
+
+                                            <TextBlock Text="Launch XAMPP Control Panel to start, stop, or restart Apache and MySQL."
+                                                       FontSize="11.5"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       Margin="0,0,0,14"/>
+
+                                            <Button Content="Launch XAMPP Control Panel"
+                                                    Style="{StaticResource PrimaryButton}"
+                                                    Click="OpenXampp_Click"
+                                                    Margin="0,0,0,8"/>
+
+                                            <Button Content="Apache Restart Guide"
+                                                    Click="RestartApache_Click"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="{DynamicResource WarningBg}"
+                                            BorderBrush="{DynamicResource WarningBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="3"
+                                            Padding="12,10"
+                                            Margin="0,14,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="DIAGNOSTICS NOTE"
+                                                       FontSize="10.5"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource WarningTitleFg}"/>
+
+                                            <TextBlock Text="If Apache fails to start after manual edits, check port conflicts (80/443) and inspect apache\logs\error.log."
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource WarningTextFg}"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- TAB 4: CURL CHECKER -->
+                    <TabItem Header="Curl Checker">
+                        <Grid Margin="18,14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="HTTP Response Header Inspector"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextStrong}"/>
+                                <TextBlock Text="Execute curl.exe -IL to inspect status codes, redirects, and server headers."
+                                           FontSize="11.5"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Grid.Column="0"
+                                         x:Name="txtCurlDomain"
+                                         Margin="0"
+                                         Text="https://example.com"
+                                         ToolTip="Enter a website domain or URL"/>
+
+                                <Button Grid.Column="2"
+                                        Content="Run curl -IL"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="CheckCurl_Click"/>
+                            </Grid>
+
+                            <TextBox x:Name="txtCurlOutput"
+                                     Grid.Row="2"
+                                     Style="{StaticResource CodeEditorBox}"
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     TextWrapping="NoWrap"/>
+                        </Grid>
+                    </TabItem>
+
+                </TabControl>
             </Grid>
-        </Border>
-    </Grid>
+
+            <!-- 3. VS CODE STATUS BAR -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource StatusBarBg}"
+                    BorderBrush="{DynamicResource StatusBarBorder}"
+                    BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Remote/Admin Pill -->
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource StatusRemoteBg}"
+                            Padding="10,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⚡ Admin"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource StatusRemoteFg}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Status Text -->
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="10,0">
+                        <TextBlock x:Name="txtStatusBarInfo"
+                                   Text="Ready  •  XAMPP Local Stack"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource StatusBarFg}"/>
+                    </StackPanel>
+
+                    <!-- Right Quick Status Items -->
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,6,0">
+                        <Button x:Name="btnStatusTheme"
+                                Style="{StaticResource StatusBarButton}"
+                                Click="ToggleTheme_Click"
+                                ToolTip="Click to switch Dark / Light theme">
+                            <TextBlock x:Name="txtStatusTheme"
+                                       Text="Theme: Dark Modern"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource StatusBarFg}"/>
+                        </Button>
+
+                        <TextBlock Text="UTF-8"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="8,0"/>
+
+                        <TextBlock Text=".NET 4.7.2"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="6,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
